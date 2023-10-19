@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from colorspacious import cspace_convert
 
 rgb_values = [
     (0, 0, 0),        # Black
@@ -35,16 +36,24 @@ def load_image(image):
         return None
 
 def find_closest_color(pixel, colors):
-    pixel = np.array(pixel)
-    colors = np.array(colors)
-    distances = np.linalg.norm(colors - pixel, axis=1)
+    pixel_lab = cspace_convert(pixel, "sRGB1", "CIELab")  # Convert pixel to CIELAB
+    colors_lab = [cspace_convert(c, "sRGB1", "CIELab") for c in colors]  # Convert color palette to CIELAB
+
+    distances = np.linalg.norm(colors_lab - pixel_lab, axis=1)  # Calculate distances in CIELAB space
     closest_color_index = np.argmin(distances)
     return colors[closest_color_index]
 
 def create_new_image(image_matrix, image):
     if image_matrix is not None:
+        total_pixels = len(image_matrix)
+        progress = 0
+
         for i in range(len(image_matrix)):
             image_matrix[i] = find_closest_color(image_matrix[i], rgb_values)
+
+            progress += 1
+            completion = (progress / total_pixels) * 100
+            print("Progress: {:.2f}%".format(completion))
 
         new_image = image_matrix.reshape(image.shape)
         return new_image
