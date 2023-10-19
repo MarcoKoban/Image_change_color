@@ -1,76 +1,58 @@
 import cv2
 import numpy as np
-from colorspacious import cspace_convert
+from PIL import Image
 
-rgb_values = [
-    (0, 0, 0),        # Black
-    (255, 255, 255),  # White
-    (0, 128, 0),      # Pine Green
-    (255, 215, 0),    # Gold
-    (255, 255, 0),    # Yellow
-    (169, 169, 169),  # Dark Gray
-    (192, 192, 192),  # Silver
-    (128, 0, 32),     # Burgundy
-    (255, 0, 0),      # Red
-    (142, 69, 133),   # Plum
-    (255, 192, 203),  # Pink
-    (0, 0, 255),      # Blue
-    (0, 255, 255),    # Cyan
-    (165, 42, 42),    # Brown
-    (255, 165, 0),    # Orange
-    (255, 127, 80),   # Coral
-    (245, 245, 220)   # Beige
-]
-
-def load_image(image):
-    if image is not None:
-        height, width, channels = image.shape
-        matrix = []
-        for y in range(height):
-            for x in range(width):
-                b, g, r = image[y, x]
-                matrix.append([b, g, r])
-        return np.array(matrix)
-    else:
-        print("Impossible de charger l'image.")
+def load_image(image_path):
+    image = cv2.imread(image_path)
+    if image is None:
+        print("Failed to load image:", image_path)
         return None
 
-def find_closest_color(pixel, colors):
-    pixel_lab = cspace_convert(pixel, "sRGB1", "CIELab")  # Convert pixel to CIELAB
-    colors_lab = [cspace_convert(c, "sRGB1", "CIELab") for c in colors]  # Convert color palette to CIELAB
+    return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
-    distances = np.linalg.norm(colors_lab - pixel_lab, axis=1)  # Calculate distances in CIELAB space
-    closest_color_index = np.argmin(distances)
-    return colors[closest_color_index]
+def quantize_image(image, palette_size=16, custom_palette=None):
+    if custom_palette is None:
+        quantized_image = image.quantize(colors=palette_size)
+    else:
+        custom_palette_obj = Image.new('P', (1, 1))
+        custom_palette_obj.putpalette([x for color in custom_palette for x in color])
+        quantized_image = image.quantize(colors=palette_size, palette=custom_palette_obj)
 
-def create_new_image(image_matrix, image):
-    if image_matrix is not None:
-        total_pixels = len(image_matrix)
-        progress = 0
+    return quantized_image.convert('RGB')
 
-        for i in range(len(image_matrix)):
-            image_matrix[i] = find_closest_color(image_matrix[i], rgb_values)
+def process_image(image):
+    if image is None:
+        return
+    custom_palette = [
+        (0, 0, 0),        # Black
+        (255, 255, 255),  # White
+        (0, 128, 0),      # Pine Green
+        (255, 215, 0),    # Gold
+        (255, 255, 0),    # Yellow
+        (169, 169, 169),  # Dark Gray
+        (192, 192, 192),  # Silver
+        (128, 0, 32),     # Burgundy
+        (255, 0, 0),      # Red
+        (142, 69, 133),   # Plum
+        (255, 192, 203),  # Pink
+        (0, 0, 255),      # Blue
+        (0, 255, 255),    # Cyan
+        (165, 42, 42),    # Brown
+        (255, 165, 0),    # Orange
+        (255, 127, 80),   # Coral
+        (245, 245, 220)   # Beige
+    ]
 
-            progress += 1
-            completion = (progress / total_pixels) * 100
-            print("Progress: {:.2f}%".format(completion))
-
-        new_image = image_matrix.reshape(image.shape)
-        return new_image
+    quantized_image = quantize_image(image, palette_size=16, custom_palette=custom_palette)
+    return quantized_image
 
 def main():
-    image = cv2.imread("wario.jpg")
-    image_matrix = load_image(image)
-    new_image = create_new_image(image_matrix, image)
-
-    cv2.imwrite("output_image.jpg", new_image)
-    cv2.imshow("Original Image", image)
-    cv2.imshow("Processed Image", new_image)
-
-    while True:
-        key = cv2.waitKey(1)
-        if key == 27:  # Pressing the 'ESC' key (27) closes the windows
-            break
+    image_path = "wario.jpg"
+    image = load_image(image_path)
+    quantized_image = process_image(image)
+    cv2.imshow("Original Image", cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR))
+    cv2.imshow("Quantized Image", cv2.cvtColor(np.array(quantized_image), cv2.COLOR_RGB2BGR))
+    cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
