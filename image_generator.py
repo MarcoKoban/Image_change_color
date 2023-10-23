@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from PIL import Image
+from click import MouseClick
 
 def load_image(image_path):
     image = cv2.imread(image_path)
@@ -29,7 +30,8 @@ def process_image(image):
         (0, 128, 0),      # Pine Green
         (255, 215, 0),    # Gold
         (255, 255, 0),    # Yellow
-        (169, 169, 169),  # Dark Gray
+        (169, 169, 169),  # Dark
+        (128, 128, 128),  # Gray
         (192, 192, 192),  # Silver
         (128, 0, 32),     # Burgundy
         (255, 0, 0),      # Red
@@ -50,10 +52,15 @@ def main():
     image_path = "wario.jpg"
     image = load_image(image_path)
     quantized_image = process_image(image)
-    cv2.imshow("Original Image", cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR))
-    cv2.imshow("Quantized Image", cv2.cvtColor(np.array(quantized_image), cv2.COLOR_RGB2BGR))
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    quantized_image.save("quantized_image.png")
+    mouse_click_instance = MouseClick()  # Créez une instance de la classe MouseClick
+    mouse_click_instance.run_listener()  # Passez le listener à la classe MouseClick
+    coo = mouse_click_instance.get_coo()
+    new_image_path = ("quantized_image.png")
+    if coo:
+        size_image = mouse_click_instance.calculate_size_image(coo[0], coo[1])
+        print(size_image)
+        mouse_click_instance.resize_image(new_image_path, size_image)
 
 if __name__ == "__main__":
     main()

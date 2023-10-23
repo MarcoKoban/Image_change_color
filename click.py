@@ -1,44 +1,56 @@
-from pynput import mouse
+# click.py
+
+from pynput.mouse import Listener
 from PIL import Image
 
-coo = []
+class MouseClick:
+    coo = []
 
-def on_click(x, y, button, pressed):
-    global coo
-    if button == mouse.Button.left and pressed:
-        print(f"Left mouse button clicked at coordinates: ({x}, {y})")
-        coo.append((x, y))
+    def __init__(self):
+        self.custom_palette = {
+            (489, 430),  # Black
+            (534, 430),  # White
+            (583, 430),  # Pine Green
+            (479, 480),  # Gold
+            (537, 480),  # Yellow
+            (582, 480),  # Dark
+            (480, 530),  # Gray
+            (537, 530),  # Silver
+            (582, 530),  # Burgundy
+            (483, 585),  # Red
+            (536, 585),  # Plum
+            (576, 585),  # Pink
+            (490, 630),  # Blue
+            (530, 630),  # Cyan
+            (585, 630),  # Brown
+            (472, 685),  # Orange
+            (528, 685),  # Coral
+            (587, 685)   # Beige
+        }
 
-        if len(coo) == 2:
-            print(coo)
-            listener.stop()
+    def on_click(self, x, y, button, pressed):
+        if button == button.left and pressed:
+            print(f"Left mouse button clicked at coordinates: ({x}, {y}")
+            self.coo.append((x, y))
 
-def calculate_size_image(coo1, coo2):
-    if coo1[0] > coo2[0]:
-        x = coo1[0] - coo2[0]
-    else:
-        x = coo2[0] - coo1[0]
-    if coo1[1] > coo2[1]:
-        y = coo1[1] - coo2[1]
-    else:
-        y = coo2[1] - coo1[1]
-    return x, y
+            if len(self.coo) == 2:
+                print(self.coo)
+                self.listener.stop()  # Utilisez self.listener pour arrêter le listener
 
-def resize_image(image_path, size_image):
-    image = Image.open(image_path) 
-    MAX_SIZE = (size_image[0], size_image[1]) 
-    image.thumbnail(MAX_SIZE)  
-    image.save('test.png') 
+    def calculate_size_image(self, coo1, coo2):
+        x = abs(coo1[0] - coo2[0])
+        y = abs(coo1[1] - coo2[1])
+        return x, y
 
-def main():
-    global listener
-    listener = mouse.Listener(on_click=on_click)
-    listener.start()
-    listener.join()
-    size_image = calculate_size_image(coo[0], coo[1])
-    print(size_image)
-    image_path = "eiffel.jpg"
-    resize_image(image_path, size_image)
+    def run_listener(self):
+        with Listener(on_click=self.on_click) as self.listener:  # Stockez la référence du listener dans self.listener
+            self.listener.join()
 
-if __name__ == "__main__":
-    main()
+    def resize_image(self, image_path, size_image):
+        image = Image.open(image_path)
+        max_size = (size_image[0], size_image[1])
+        image.thumbnail(max_size)
+        image.save('test.png')
+
+    def get_coo(self):
+        return self.coo
