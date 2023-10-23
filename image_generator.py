@@ -2,6 +2,7 @@ import cv2
 from PIL import Image
 from click import MouseClick
 import pyautogui
+from pynput.mouse import Button, Controller
 import time
 
 def load_image(image_path):
@@ -51,14 +52,24 @@ def process_image(image):
 
 def get_pixel_colors(image_path):
     image = Image.open(image_path)
-    pixel_colors = []
+    pixel_colors = {}
 
     for y in range(image.height):
         for x in range(image.width):
             pixel = image.getpixel((x, y))
-            pixel_colors.append(pixel)
+            pixel_colors[(x, y)] = pixel
 
     return pixel_colors
+
+def click_after_delay(pos, pixel_colors):
+    mouse = Controller()
+    for pixel_position, color in pixel_colors.items():
+        if (color == (0, 255, 255)):
+            #print(f"Pixel at position {pixel_position}")
+            mouse.position = (int(pixel_position[0]) + int(pos[0]), int(pixel_position[1]) + int(pos[1]))
+            time.sleep(0.001)  # Attendre pendant 0.1 seconde (ajuster si nécessaire)
+            mouse.click(Button.left, 1)
+
 
 def main():
     image_path = "eiffel.jpg"
@@ -79,6 +90,7 @@ def main():
     
     quantized_image_path = ("quantized_image.png")
     pixel_colors = get_pixel_colors(quantized_image_path)
+    click_after_delay(coo[0], pixel_colors)
 
 if __name__ == "__main__":
     main()
