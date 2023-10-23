@@ -1,7 +1,8 @@
 import cv2
-import numpy as np
 from PIL import Image
 from click import MouseClick
+import pyautogui
+import time
 
 def load_image(image_path):
     image = cv2.imread(image_path)
@@ -48,19 +49,36 @@ def process_image(image):
     quantized_image = quantize_image(image, palette_size=16, custom_palette=custom_palette)
     return quantized_image
 
+def get_pixel_colors(image_path):
+    image = Image.open(image_path)
+    pixel_colors = []
+
+    for y in range(image.height):
+        for x in range(image.width):
+            pixel = image.getpixel((x, y))
+            pixel_colors.append(pixel)
+
+    return pixel_colors
+
 def main():
-    image_path = "wario.jpg"
+    image_path = "eiffel.jpg"
     image = load_image(image_path)
-    quantized_image = process_image(image)
-    quantized_image.save("quantized_image.png")
-    mouse_click_instance = MouseClick()  # Créez une instance de la classe MouseClick
-    mouse_click_instance.run_listener()  # Passez le listener à la classe MouseClick
+    mouse_click_instance = MouseClick()
+    mouse_click_instance.run_listener()
     coo = mouse_click_instance.get_coo()
-    new_image_path = ("quantized_image.png")
     if coo:
         size_image = mouse_click_instance.calculate_size_image(coo[0], coo[1])
         print(size_image)
-        mouse_click_instance.resize_image(new_image_path, size_image)
+        mouse_click_instance.resize_image(image_path, size_image)
+
+    resize_image_path = ("resize.png")
+    resize_image = load_image(resize_image_path)
+    quantized_image = process_image(resize_image)
+    quantized_image.save("quantized_image.png")
+    print("Image quantized has been created")
+    
+    quantized_image_path = ("quantized_image.png")
+    pixel_colors = get_pixel_colors(quantized_image_path)
 
 if __name__ == "__main__":
     main()

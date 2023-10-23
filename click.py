@@ -30,12 +30,11 @@ class MouseClick:
 
     def on_click(self, x, y, button, pressed):
         if button == button.left and pressed:
-            print(f"Left mouse button clicked at coordinates: ({x}, {y}")
+            print(f"Coordinates number {len(self.coo) + 1} are ({x}, {y})")
             self.coo.append((x, y))
 
             if len(self.coo) == 2:
-                print(self.coo)
-                self.listener.stop()  # Utilisez self.listener pour arrêter le listener
+                self.listener.stop()
 
     def calculate_size_image(self, coo1, coo2):
         x = abs(coo1[0] - coo2[0])
@@ -50,7 +49,7 @@ class MouseClick:
         image = Image.open(image_path)
         max_size = (size_image[0], size_image[1])
         image.thumbnail(max_size)
-        image.save('test.png')
+        image.save('resize.png')
 
     def get_coo(self):
         return self.coo
