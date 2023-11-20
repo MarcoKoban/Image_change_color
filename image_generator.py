@@ -1,7 +1,5 @@
 import cv2
 import PIL
-from click import MouseClick
-from pynput.mouse import Button, Controller
 import requests
 from io import BytesIO
 
