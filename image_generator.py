@@ -53,3 +53,17 @@ def read_file(nom_fichier, size_groupe):
     except Exception as e:
         print(f"Une erreur s'est produite : {str(e)}")
         return []
+    
+def create_image_with_sampled_colors(input_image_path, x):
+    input_image = PIL.Image.open(input_image_path)
+    input_image = input_image.convert("RGB")
+
+    width, height = input_image.size
+    output_image = PIL.Image.new('RGB', (width, height))
+    for i in range(0, width, x):
+        for j in range(0, height, x):
+            pixel_color = input_image.getpixel((i, j))
+            for a in range(i, min(i + x, width)):
+                for b in range(j, min(j + x, height)):
+                    output_image.putpixel((a, b), pixel_color)
+    output_image.save('images/output_image.png')
